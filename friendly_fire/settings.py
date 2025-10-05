@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
+from urllib.parse import urlparse, parse_qsl
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--pck6e^#9%3bm1q1i9%j9^u_u!e@61ewv72gzz2v=7#dz@)-cr'
+SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts'
+    'accounts',
+    'rest_framework',
+    'rest_framework_simplejwt'
 ]
 
 MIDDLEWARE = [
@@ -73,13 +77,27 @@ WSGI_APPLICATION = 'friendly_fire.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if DEBUG == True:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
+elif DEBUG == False:
+    tmpPostgres = urlparse(config("DATABASE_URL"))
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': tmpPostgres.path.replace('/', ''),
+            'USER': tmpPostgres.username,
+            'PASSWORD': tmpPostgres.password,
+            'HOST': tmpPostgres.hostname,
+            'PORT': 5432,
+            'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
