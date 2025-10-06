@@ -34,7 +34,6 @@ class GoogleOAuthBackend(BaseBackend):
                 google_req.Request(),
                 audience=config('GOOGLE_CLIENT_ID')
             )
-
             social_id= user_info.get('sub')
             email= user_info.get('email')
             first_name = user_info.get('given_name')

@@ -20,7 +20,7 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         if auth_provider=='email':
             kwargs['social_id']=email
-            user = self.model(email, auth_provider, *args, **kwargs)
+            user = self.model(email=email, auth_provider=auth_provider, *args, **kwargs)
 
             if not password:
                 raise ValueError('Password is required for email sign-in')
@@ -28,15 +28,18 @@ class CustomUserManager(BaseUserManager):
             user.set_password(password)
 
         elif auth_provider=='google':
-            user = self.model(email, auth_provider, *args, **kwargs)
+            user = self.model(email=email,auth_provider= auth_provider, *args, **kwargs)
             user.set_unusable_password()
+
+        else:
+            raise ValueError('Invalid auth provider')
 
         user.save()
         return user
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
 
-    user_id = models.CharField(max_length=50, unique=True, primary_key=True)
+    id = models.CharField(max_length=50, unique=True, primary_key=True)
     social_id = models.CharField(max_length=25, unique=True)
 
     email = models.EmailField(unique=True)
@@ -59,7 +62,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def save(self, *args, **kwargs):
         if not self.id:
-            self.id = f'{uuid.uuid4().lower()}'
+            self.id = f'{uuid.uuid4().hex.lower()}'
         super().save(*args, **kwargs)
 
     def __str__(self):
