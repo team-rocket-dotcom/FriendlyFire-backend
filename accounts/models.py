@@ -63,6 +63,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def save(self, *args, **kwargs):
         if not self.id:
             self.id = f'{uuid.uuid4().hex.lower()}'
+        self.full_clean() #forces validation(the auth_provider field will have no value other than the CHOICES)
         super().save(*args, **kwargs)
 
     def __str__(self):
