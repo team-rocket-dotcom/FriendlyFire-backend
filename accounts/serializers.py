@@ -31,7 +31,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        user = validated_data.pop('user')
+        user = validated_data.pop('user',None)
         if user:
             return user
         user = User.objects.create_user(**validated_data)
