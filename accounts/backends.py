@@ -63,7 +63,7 @@ class GoogleOAuthBackend(BaseBackend):
             return user
 
         except User.DoesNotExist:
-            user = User.objects.create_user(
+            user = User.objects.create_user_with_wallet(
                 email=email,
                 social_id=social_id,
                 first_name=first_name,

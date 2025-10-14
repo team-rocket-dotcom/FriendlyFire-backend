@@ -34,7 +34,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         user = validated_data.pop('user',None)
         if user:
             return user
-        user = User.objects.create_user(**validated_data)
+        user = User.objects.create_user_with_wallet(**validated_data)
         return user
     
 class SignInSerializer(serializers.Serializer):

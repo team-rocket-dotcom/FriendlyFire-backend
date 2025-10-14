@@ -1,8 +1,9 @@
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
-from django.db import models
+from django.db import models, transaction
 from decouple import config
 import uuid
 
+from wallet.models import Wallet
 # Create your models here.
 
 AUTH_PROVIDERS = (
@@ -37,6 +38,13 @@ class CustomUserManager(BaseUserManager):
         user.save()
         return user
 
+    def create_user_with_wallet(self, email, auth_provider='email', password=None, *args, **kwargs):
+        with transaction.atomic():
+            user = self.create_user(email=email, auth_provider=auth_provider, password=password, *args, **kwargs)
+            Wallet.objects.create(owner=user,balance=0.00,currency='inr')
+            return user
+        return None
+
 class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     id = models.CharField(max_length=50, unique=True, primary_key=True)
@@ -67,4 +75,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.email} ({self.first_name}, {self.auth_provider})'
+        return f'{self.email} ({self.first_name} {self.last_name}, {self.auth_provider})'
