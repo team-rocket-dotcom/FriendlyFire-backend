@@ -49,18 +49,29 @@ class TaskSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         is_priority = attrs.get('is_priority',False)
         priority_level = attrs.get('priority_level',None)
-        recipient_id = attrs.get('stake_recipient',None)
+        stake_recipient = attrs.get('stake_recipient',None)
 
+        # If task is not priority, remove unnecessary priority-related inputs
         if not is_priority:
             attrs.pop('priority_level',None)
             attrs.pop('recipient_id',None)
             return attrs
 
+        # Validate priority_level
         if priority_level not in priority_options:
             raise serializers.ValidationError("Invalid priority level option")
 
-        if priority_level is None or recipient_id is None:
+        # For priority tasks, both priority_level and recipient_id is required
+        if priority_level is None or stake_recipient is None:
             raise serializers.ValidationError('Priority Level and Stake recipient are required for Priority Tasks')
+
+        # Ensure the recipient_id is of a valid user
+        if not stake_recipient:
+            raise serializers.ValidationError('Recipient is not a user')
+
+        # Ensure stake recipient is not the owner
+        if stake_recipient == self.context.get('request').user:
+            raise serializers.ValidationError('Owner cannot be the recipient')
 
         return attrs
 
